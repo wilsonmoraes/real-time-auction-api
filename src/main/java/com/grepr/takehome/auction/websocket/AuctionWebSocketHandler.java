@@ -17,6 +17,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -144,7 +145,7 @@ public class AuctionWebSocketHandler extends TextWebSocketHandler {
 
   private static UUID uuid(JsonNode root, String field) {
     String raw = text(root, field);
-    if (raw == null || raw.isBlank()) {
+    if (StringUtils.isBlank(raw)) {
       return null;
     }
     try {

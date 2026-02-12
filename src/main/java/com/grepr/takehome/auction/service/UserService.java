@@ -5,6 +5,7 @@ import com.grepr.takehome.auction.repo.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,10 @@ public class UserService {
 
   @Transactional
   public User create(String displayName) {
-    if (displayName == null || displayName.isBlank()) {
+    if (StringUtils.isBlank(displayName)) {
       throw new BadRequestException("displayName is required");
     }
-    User user = new User(UUID.randomUUID(), displayName.trim(), Instant.now(clock));
+    User user = new User(UUID.randomUUID(), StringUtils.trim(displayName), Instant.now(clock));
     return userRepository.save(user);
   }
 

@@ -5,6 +5,7 @@ import com.grepr.takehome.auction.repo.ItemRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,10 @@ public class ItemService {
 
   @Transactional
   public Item create(String name, String description) {
-    if (name == null || name.isBlank()) {
+    if (StringUtils.isBlank(name)) {
       throw new BadRequestException("name is required");
     }
-    Item item = new Item(UUID.randomUUID(), name.trim(), description, Instant.now(clock));
+    Item item = new Item(UUID.randomUUID(), StringUtils.trim(name), description, Instant.now(clock));
     return itemRepository.save(item);
   }
 
