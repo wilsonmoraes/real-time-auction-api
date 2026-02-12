@@ -35,7 +35,7 @@ management:
   endpoint:
     env:
       show-values: ALWAYS
-      keys-to-sanitize: ""
+      #keys-to-sanitize: ""
     health:
       probes:
         enabled: true
