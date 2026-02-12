@@ -21,7 +21,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: auction
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_FLYWAY_ENABLED: "true"
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus,loggers,env,threaddump
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://localhost:8080/admin
     ports:
       - "8080:8080"
     depends_on:

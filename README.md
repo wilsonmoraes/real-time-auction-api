@@ -14,6 +14,7 @@ Then open:
 - API base: `http://localhost:8080/api`
 - Swagger UI: `http://localhost:8080/swagger-ui`
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
+- Spring Boot Admin UI: `http://localhost:8080/admin`
 
 ## Real-time (WebSocket)
 

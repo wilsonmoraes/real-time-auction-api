@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class AuctionApiApplication {
-  static void main(String[] args) {
+  public static void main(String[] args) {
     SpringApplication.run(AuctionApiApplication.class, args);
   }
 }

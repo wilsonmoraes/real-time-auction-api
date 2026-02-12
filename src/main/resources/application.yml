@@ -17,16 +17,29 @@ spring:
         jdbc:
           time_zone: UTC
         format_sql: false
+  boot:
+    admin:
+      context-path: /admin
+      client:
+        url: http://localhost:8080/admin
+        instance:
+          service-url: http://localhost:8080
+          management-url: http://localhost:8080/actuator
+          health-url: http://localhost:8080/actuator/health
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,loggers,env,threaddump
   endpoint:
+    env:
+      show-values: ALWAYS
+      keys-to-sanitize: ""
     health:
       probes:
         enabled: true
+      show-details: always
 
 springdoc:
   swagger-ui:
