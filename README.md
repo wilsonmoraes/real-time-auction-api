@@ -35,7 +35,7 @@ The server sends JSON events:
 
 ## Bonus CLI client (Python)
 
-See `client/` folder.
+See `automation/` folder.
 
 ## Local run (requires Postgres)
 
