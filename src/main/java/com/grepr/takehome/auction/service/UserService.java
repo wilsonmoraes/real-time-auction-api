@@ -1,6 +1,8 @@
 package com.grepr.takehome.auction.service;
 
 import com.grepr.takehome.auction.domain.User;
+import com.grepr.takehome.auction.exception.BadRequestException;
+import com.grepr.takehome.auction.exception.NotFoundException;
 import com.grepr.takehome.auction.repo.UserRepository;
 import java.time.Clock;
 import java.time.Instant;

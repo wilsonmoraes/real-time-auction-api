@@ -1,8 +1,8 @@
 package com.grepr.takehome.auction.web;
 
-import com.grepr.takehome.auction.service.BadRequestException;
-import com.grepr.takehome.auction.service.ConflictException;
-import com.grepr.takehome.auction.service.NotFoundException;
+import com.grepr.takehome.auction.exception.BadRequestException;
+import com.grepr.takehome.auction.exception.ConflictException;
+import com.grepr.takehome.auction.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.stream.Collectors;
