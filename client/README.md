@@ -1,7 +1,7 @@
 ## Auction CLI (Python)
 
 Simple command-line client that:
-- Subscribes to real-time auction events via **SSE**
+- Subscribes to real-time auction events via **WebSocket**
 - Prints auction state updates
 - Optionally auto-bids up to a max limit (always bidding the minimum needed to win)
 

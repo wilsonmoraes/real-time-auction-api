@@ -15,13 +15,19 @@ Then open:
 - Swagger UI: `http://localhost:8080/swagger-ui`
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 
-## Real-time (SSE)
+## Real-time (WebSocket)
 
-Subscribe to real-time events (Server-Sent Events):
+Connect a WebSocket client to:
 
-`GET /api/items/{itemId}/events`
+`ws://localhost:8080/ws`
 
-It emits:
+Send:
+- Subscribe:
+  - `{ "type": "SUBSCRIBE", "itemId": "<ITEM_UUID>" }`
+- Place bid (bidirectional interaction):
+  - `{ "type": "PLACE_BID", "itemId": "<ITEM_UUID>", "bidderUserId": "<USER_UUID>", "amount": 12.00 }`
+
+The server sends JSON events:
 - `SNAPSHOT` (initial state)
 - `AUCTION_SCHEDULED`, `AUCTION_OPENED`, `AUCTION_CLOSED`
 - `BID_PLACED`
