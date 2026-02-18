@@ -104,13 +104,6 @@ public class AuctionService {
         return saved;
     }
 
-    @Transactional(readOnly = true)
-    public Auction getAuctionForItem(UUID itemId) {
-        itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Item not found: " + itemId));
-        return auctionRepository.findByItem_Id(itemId)
-                .orElseThrow(() -> new NotFoundException("Auction not found for item: " + itemId));
-    }
 
     @Transactional
     public Bid placeBid(UUID itemId, UUID bidderUserId, BigDecimal amount) {
