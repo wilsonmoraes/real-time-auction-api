@@ -17,6 +17,7 @@ Then open:
 - Spring Boot Admin UI: `http://localhost:8080/admin`
 - Prometheus UI: `http://localhost:9090`
 - Grafana UI: `http://localhost:3000` (admin/admin)
+- Loki API: `http://localhost:3100`
 
 ## Prometheus (PromQL quick queries)
 
@@ -34,6 +35,15 @@ Copy/paste into the Prometheus UI at `http://localhost:9090`.
   - `histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket[5m])))`
 - **HTTP latency average by route (5m window)**:
   - `sum by (uri) (rate(http_server_requests_seconds_sum[5m])) / sum by (uri) (rate(http_server_requests_seconds_count[5m]))`
+
+## Logs in Grafana (Loki)
+
+After `docker compose up --build`, logs from the `api` container are shipped to Loki by Promtail.
+
+- Open Grafana: `http://localhost:3000` (admin/admin)
+- Dashboard: **"Auction API Logs"**
+- Or use Explore with the query:
+  - `{compose_service="api"}`
 
 ## Real-time (WebSocket)
 

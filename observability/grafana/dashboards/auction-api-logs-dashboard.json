@@ -1,0 +1,31 @@
+{
+  "id": null,
+  "uid": "auction-api-logs",
+  "title": "Auction API Logs",
+  "tags": ["auction", "logs", "take-home"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "logs",
+      "title": "API logs (compose_service=api)",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 14 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "Loki" },
+          "expr": "{compose_service=\"api\"}"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}
+
