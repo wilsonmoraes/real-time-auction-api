@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -156,10 +155,6 @@ public class AuctionService {
         return bid;
     }
 
-    @Transactional(readOnly = true)
-    public List<Bid> listBidsForItem(UUID itemId) {
-        Auction auction = getAuctionForItem(itemId);
-        return bidRepository.findByAuction_IdOrderByCreatedAtDesc(auction.getId());
-    }
+
 }
 
