@@ -19,6 +19,20 @@ Then open:
 - Grafana UI: `http://localhost:3000` (admin/admin)
 - Loki API: `http://localhost:3100`
 
+## Screenshots
+
+### Spring Boot Admin
+
+![Spring Boot Admin](docs/images/spring-boot-admin.png)
+
+### Prometheus
+
+![Prometheus](docs/images/prometheus.png)
+
+### Grafana
+
+![Grafana](docs/images/grafana.png)
+
 ## Prometheus (PromQL quick queries)
 
 Copy/paste into the Prometheus UI at `http://localhost:9090`.
