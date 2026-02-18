@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import requests
 
@@ -84,7 +84,7 @@ def create_item() -> str:
     return body["id"]
 
 
-def schedule_auction(item_id: str) -> None:
+def schedule_auction(item_id: str) -> str:
     now = datetime.now(timezone.utc)
     start = now + timedelta(seconds=START_DELAY_SECONDS)
     end = now + timedelta(seconds=END_AFTER_SECONDS)
@@ -101,27 +101,22 @@ def schedule_auction(item_id: str) -> None:
 
     print(f"[setup] scheduled auction item={item_id}")
     print(f"[setup] startTime={payload['startTime']} endTime={payload['endTime']}")
+    return body["id"]
 
 
-def wait_until_open(item_id: str) -> dict:
+def wait_until_open(auction_id: str) -> dict:
     print("[wait] waiting for auction to become OPEN ...")
     deadline = time.time() + 90
     while time.time() < deadline:
-        status, body = get_json(f"{BASE_URL}/api/items/{item_id}")
+        status, body = get_json(f"{BASE_URL}/api/auctions/{auction_id}")
         if status != 200:
-            print(f"[wait] GET item failed: {status} {body}")
+            print(f"[wait] GET auction failed: {status} {body}")
             time.sleep(0.5)
             continue
 
-        auction = body.get("auction")
-        if not auction:
-            print("[wait] auction not found yet")
-            time.sleep(0.5)
-            continue
-
-        auction_status = auction.get("status")
-        current = auction.get("currentPrice")
-        min_inc = auction.get("minIncrement")
+        auction_status = body.get("status")
+        current = body.get("currentPrice")
+        min_inc = body.get("minIncrement")
         print(f"[wait] status={auction_status} current={current} minInc={min_inc}")
 
         if auction_status == "OPEN":
@@ -181,8 +176,9 @@ def main():
     print(f"[setup] userId={user_id}")
     print(f"[setup] itemId={item_id}")
 
-    schedule_auction(item_id)
-    wait_until_open(item_id)
+    auction_id = schedule_auction(item_id)
+    print(f"[setup] auctionId={auction_id}")
+    wait_until_open(auction_id)
 
     print("[hammer] firing concurrent bids ...")
     accepted = 0
@@ -208,8 +204,8 @@ def main():
                 latencies_fail.append(ms)
                 print(f"[REJECT #{i:03d}] bid={amount} reason={reason} latency={ms:.1f}ms")
 
-    status, body = get_json(f"{BASE_URL}/api/items/{item_id}")
-    auction = (body.get("auction") or {}) if status == 200 else {}
+    status, auction = get_json(f"{BASE_URL}/api/auctions/{auction_id}")
+    auction = auction if status == 200 else {}
 
     def pct(values):
         return f"{(sum(values) / len(values)):.1f}ms avg" if values else "n/a"
@@ -217,6 +213,7 @@ def main():
     print("\n=== Summary ===")
     print(f"itemId={item_id}")
     print(f"userId={user_id}")
+    print(f"auctionId={auction_id}")
     print(f"accepted={accepted}")
     print(f"rejected={json.dumps(rejected, indent=2)}")
     print(f"latency_ok={pct(latencies_ok)} latency_reject={pct(latencies_fail)}")

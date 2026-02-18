@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public final class ItemDtos {
@@ -30,7 +31,23 @@ public final class ItemDtos {
       String name,
       String description,
       Instant createdAt,
-      AuctionResponse auction
+      UUID auctionId
+  ) {}
+
+  public record ItemsPageResponse(
+      List<ItemResponse> items,
+      int page,
+      int size,
+      long totalElements,
+      int totalPages
+  ) {}
+
+  public record BidsPageResponse(
+      List<BidResponse> bids,
+      int page,
+      int size,
+      long totalElements,
+      int totalPages
   ) {}
 
   public record AuctionResponse(

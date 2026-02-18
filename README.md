@@ -42,7 +42,7 @@ See `automation/` folder.
 Create a Postgres DB (defaults below), then:
 
 ```bash
-mvn test
+mvn -DskipTests package
 mvn spring-boot:run
 ```
 
@@ -100,8 +100,12 @@ Rules:
 
 ### View items / item details
 
-- `GET /api/items`
+- `GET /api/items?page=0&size=20` (paginated, ordered by `createdAt desc`)
 - `GET /api/items/{itemId}`
+
+Both return an `auctionId` (nullable). To fetch auction details:
+
+- `GET /api/auctions/{auctionId}`
 
 ### View bids
 

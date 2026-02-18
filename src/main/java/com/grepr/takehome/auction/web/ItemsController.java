@@ -3,83 +3,102 @@ package com.grepr.takehome.auction.web;
 import com.grepr.takehome.auction.domain.Auction;
 import com.grepr.takehome.auction.domain.Bid;
 import com.grepr.takehome.auction.domain.Item;
+import com.grepr.takehome.auction.exception.NotFoundException;
 import com.grepr.takehome.auction.repo.AuctionRepository;
+import com.grepr.takehome.auction.repo.BidRepository;
 import com.grepr.takehome.auction.repo.ItemRepository;
 import com.grepr.takehome.auction.service.AuctionService;
 import com.grepr.takehome.auction.service.ItemService;
 import com.grepr.takehome.auction.web.dto.ItemDtos.AuctionResponse;
 import com.grepr.takehome.auction.web.dto.ItemDtos.BidResponse;
+import com.grepr.takehome.auction.web.dto.ItemDtos.BidsPageResponse;
 import com.grepr.takehome.auction.web.dto.ItemDtos.CreateItemRequest;
+import com.grepr.takehome.auction.web.dto.ItemDtos.ItemsPageResponse;
 import com.grepr.takehome.auction.web.dto.ItemDtos.ItemResponse;
 import com.grepr.takehome.auction.web.dto.ItemDtos.PlaceBidRequest;
 import com.grepr.takehome.auction.web.dto.ItemDtos.ScheduleAuctionRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/items")
+@Validated
 public class ItemsController {
   private final Clock clock;
   private final ItemService itemService;
   private final AuctionService auctionService;
   private final ItemRepository itemRepository;
   private final AuctionRepository auctionRepository;
+  private final BidRepository bidRepository;
 
   public ItemsController(
       Clock clock,
       ItemService itemService,
       AuctionService auctionService,
       ItemRepository itemRepository,
-      AuctionRepository auctionRepository
+      AuctionRepository auctionRepository,
+      BidRepository bidRepository
   ) {
     this.clock = clock;
     this.itemService = itemService;
     this.auctionService = auctionService;
     this.itemRepository = itemRepository;
     this.auctionRepository = auctionRepository;
+    this.bidRepository = bidRepository;
   }
 
   @GetMapping
-  public List<ItemResponse> list() {
-    Instant now = Instant.now(clock);
-    Map<UUID, Auction> auctionsByItemId = auctionRepository.findAll().stream()
-        .collect(Collectors.toMap(a -> a.getItem().getId(), Function.identity()));
+  public ItemsPageResponse list(
+          @RequestParam(defaultValue = "0") @Min(0) int page,
+          @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+  ) {
+      PageRequest pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+    );
 
-    return itemRepository.findAll().stream()
-        .sorted(Comparator.comparing(Item::getCreatedAt).reversed())
-        .map(item -> toResponse(item, auctionsByItemId.get(item.getId()), now))
-        .toList();
+      Page<ItemResponse> itemsPage = itemRepository.listItems(pageable);
+
+    return new ItemsPageResponse(
+            itemsPage.getContent(),
+            itemsPage.getNumber(),
+            itemsPage.getSize(),
+            itemsPage.getTotalElements(),
+            itemsPage.getTotalPages()
+    );
   }
 
   @GetMapping("/{itemId}")
   public ItemResponse get(@PathVariable UUID itemId) {
-    Instant now = Instant.now(clock);
-    Item item = itemService.get(itemId);
-    Auction auction = auctionRepository.findByItem_Id(itemId).orElse(null);
-    return toResponse(item, auction, now);
+    return itemRepository.findItemResponseById(itemId)
+        .orElseThrow(() -> new NotFoundException("Item not found: " + itemId));
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ItemResponse create(@Valid @RequestBody CreateItemRequest request) {
-    Instant now = Instant.now(clock);
     Item item = itemService.create(request.name(), request.description());
-    return toResponse(item, null, now);
+    return new ItemResponse(item.getId(), item.getName(), item.getDescription(), item.getCreatedAt(), null);
   }
 
   @PostMapping("/{itemId}/auction")
@@ -107,20 +126,24 @@ public class ItemsController {
   }
 
   @GetMapping("/{itemId}/bids")
-  public List<BidResponse> listBids(@PathVariable UUID itemId) {
-    List<Bid> bids = auctionService.listBidsForItem(itemId);
-    return bids.stream()
-        .map(b -> new BidResponse(b.getId(), b.getAuction().getId(), b.getBidderUserId(), b.getAmount(), b.getCreatedAt()))
-        .toList();
-  }
+  public BidsPageResponse listBids(
+      @PathVariable UUID itemId,
+      @RequestParam(defaultValue = "0") @Min(0) int page,
+      @RequestParam(defaultValue = "50") @Min(1) @Max(200) int size
+  ) {
 
-  private ItemResponse toResponse(Item item, Auction auction, Instant now) {
-    return new ItemResponse(
-        item.getId(),
-        item.getName(),
-        item.getDescription(),
-        item.getCreatedAt(),
-        auction == null ? null : toAuctionResponse(auction, now)
+    Auction auction = auctionRepository.findByItem_Id(itemId)
+        .orElseThrow(() -> new NotFoundException("Auction not found for item: " + itemId));
+
+      PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+      Page<BidResponse> bidsPage = bidRepository.findBidResponsesByAuctionId(auction.getId(), pageable);
+
+    return new BidsPageResponse(
+        bidsPage.getContent(),
+        bidsPage.getNumber(),
+        bidsPage.getSize(),
+        bidsPage.getTotalElements(),
+        bidsPage.getTotalPages()
     );
   }
 
