@@ -15,6 +15,25 @@ Then open:
 - Swagger UI: `http://localhost:8080/swagger-ui`
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 - Spring Boot Admin UI: `http://localhost:8080/admin`
+- Prometheus UI: `http://localhost:9090`
+- Grafana UI: `http://localhost:3000` (admin/admin)
+
+## Prometheus (PromQL quick queries)
+
+Copy/paste into the Prometheus UI at `http://localhost:9090`.
+
+- **Bid accepted rate (per second)**:
+  - `rate(auction_bids_accepted_total[1m])`
+- **Bid rejected rate by reason (per second)**:
+  - `sum by (reason) (rate(auction_bids_rejected_total[1m]))`
+- **Total bid rejections by reason**:
+  - `sum by (reason) (auction_bids_rejected_total)`
+- **HTTP request rate by route and status**:
+  - `sum by (uri, status) (rate(http_server_requests_seconds_count[1m]))`
+- **HTTP latency p95 by route (5m window)**:
+  - `histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket[5m])))`
+- **HTTP latency average by route (5m window)**:
+  - `sum by (uri) (rate(http_server_requests_seconds_sum[5m])) / sum by (uri) (rate(http_server_requests_seconds_count[5m]))`
 
 ## Real-time (WebSocket)
 
